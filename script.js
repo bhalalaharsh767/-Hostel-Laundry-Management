@@ -1,6 +1,6 @@
 /**
  * Hostel Laundry Management System
- * Core Application Logic - Fast Direct Typing & Keyboard Navigation
+ * Core Application Logic - Direct Fast Entry Mode
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -10,10 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const toastContainer = document.getElementById('toast-container');
   const sendAllBtn = document.getElementById('send-all-btn');
   const sendAllStatusEl = document.getElementById('send-all-status');
-  const loginModal = document.getElementById('login-modal');
-  const loginForm = document.getElementById('login-form');
-  const passcodeInput = document.getElementById('passcode-input');
-  const quickLockBtn = document.getElementById('quick-lock-btn');
 
   // Total Row Elements
   const sumPantEl = document.getElementById('sum-pant');
@@ -25,50 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Exactly 5 students
   const students = ['Ronit', 'Raj', 'Harsh', 'Preet', 'Meet'];
-  const CORRECT_PASSCODE = '1234';
+  const TARGET_URL = 'https://share.google/3umX153OFCJdNUwMw';
 
   // Display Current Date
   const today = new Date();
   const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
   currentDateEl.textContent = today.toLocaleDateString('en-US', options);
-
-  // Passcode / Login Authentication Logic
-  function checkAuth() {
-    const isLoggedIn = sessionStorage.getItem('hostel_laundry_logged_in') === 'true';
-    if (isLoggedIn) {
-      loginModal.classList.add('hidden');
-      focusFirstInput();
-    } else {
-      loginModal.classList.remove('hidden');
-      setTimeout(() => passcodeInput.focus(), 100);
-    }
-  }
-
-  if (loginForm) {
-    loginForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const entered = passcodeInput.value.trim();
-      if (entered === CORRECT_PASSCODE || entered === '') {
-        sessionStorage.setItem('hostel_laundry_logged_in', 'true');
-        loginModal.classList.add('hidden');
-        showToast('Login Successful! 🔑', 'You can now type numbers directly into the table.', 'success');
-        focusFirstInput();
-      } else {
-        showToast('Incorrect Passcode', 'Please try again (Default: 1234).', 'warning');
-        passcodeInput.select();
-      }
-    });
-  }
-
-  if (quickLockBtn) {
-    quickLockBtn.addEventListener('click', () => {
-      sessionStorage.removeItem('hostel_laundry_logged_in');
-      loginModal.classList.remove('hidden');
-      passcodeInput.value = '';
-      passcodeInput.focus();
-      showToast('Locked 🔒', 'Access locked.', 'info');
-    });
-  }
 
   // Auto-focus on the first item input field for instant typing
   function focusFirstInput() {
@@ -89,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     calculateGrandTotals();
-    checkAuth();
+    focusFirstInput();
   }
 
   /**
@@ -262,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Single Submit All Laundry Function - Opens https://share.google/3umX153OFCJdNUwMw
+   * Single Submit All Laundry Function - Copies summary and opens Target Link
    */
   function handleSendAll() {
     const grandTotal = calculateGrandTotals();
@@ -275,16 +233,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const timestamp = new Date();
     const timeStr = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+    const sumPant = sumPantEl.textContent || 0;
+    const sumShirt = sumShirtEl.textContent || 0;
+    const sumTshirt = sumTshirtEl.textContent || 0;
+    const sumTrack = sumTrackEl.textContent || 0;
+    const sumTowel = sumTowelEl.textContent || 0;
+
+    // Copy Summary Text to Clipboard for fast pasting inside Google Form / Portal
+    const copyText = `Pants: ${sumPant}, Shirts: ${sumShirt}, T-Shirts: ${sumTshirt}, Tracks: ${sumTrack}, Towels: ${sumTowel}, Total: ${grandTotal}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(copyText).catch(() => {});
+    }
+
     // Show Success Toast Message
-    showToast('Sent Successfully! 🚀', `Laundry recorded! Opening Google Share link...`, 'success');
+    showToast('Sent Successfully! 🚀', `Copied totals! Opening form link...`, 'success');
 
     // Display Status Message Below Button
     if (sendAllStatusEl) {
       sendAllStatusEl.innerHTML = `<span class="sent-status-badge">✓ Submitted All Laundry at ${timeStr} (${grandTotal} items)</span>`;
     }
 
-    // Open https://share.google/3umX153OFCJdNUwMw directly
-    window.open('https://share.google/3umX153OFCJdNUwMw', '_blank');
+    // Open target link directly
+    window.open(TARGET_URL, '_blank');
   }
 
   /**
