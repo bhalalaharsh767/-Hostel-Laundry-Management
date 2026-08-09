@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hostel Laundry Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Header Section -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="logo-area">
+          <div class="logo-icon">🧺</div>
+          <div>
+            <h1>Hostel Laundry Management</h1>
+            <p class="subtitle">Daily Student Laundry Tracker</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Toast Notification Banner -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- Date Banner -->
+      <div class="date-bar">
+        <span class="date-label">📅 Today's Date:</span>
+        <span id="current-date" class="date-value"></span>
+      </div>
+
+      <!-- Laundry Entry Table Card -->
+      <div class="card table-card">
+        <div class="table-responsive">
+          <table class="laundry-table" id="laundry-table">
+            <thead>
+              <tr>
+                <th class="col-name">NAME</th>
+                <th class="col-item">PANT</th>
+                <th class="col-item">SHIRT</th>
+                <th class="col-item">T-SHIRT</th>
+                <th class="col-item">TRACK</th>
+                <th class="col-item">TOWEL</th>
+                <th class="col-total">TOTAL</th>
+              </tr>
+            </thead>
+            <tbody id="student-table-body">
+              <!-- Exactly 5 Student Rows -->
+            </tbody>
+            <tfoot>
+              <tr class="total-row">
+                <td class="col-name total-label-cell">TOTAL</td>
+                <td class="col-item total-val-cell" id="sum-pant">0</td>
+                <td class="col-item total-val-cell" id="sum-shirt">0</td>
+                <td class="col-item total-val-cell" id="sum-tshirt">0</td>
+                <td class="col-item total-val-cell" id="sum-track">0</td>
+                <td class="col-item total-val-cell" id="sum-towel">0</td>
+                <td class="col-total total-val-cell">
+                  <span class="total-badge grand-total-badge" id="sum-grand-total">0</span>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <!-- Single Submit All Action Bar -->
+        <div class="table-action-footer">
+          <button type="button" id="send-all-btn" class="btn btn-send-all">
+            <span class="btn-icon">🚀</span> SEND ALL LAUNDRY
+          </button>
+          <div id="send-all-status" class="send-all-status"></div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Hostel Laundry Tracker &bull; Simple & Fast Student Entry</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
