@@ -19,8 +19,13 @@
           <div class="logo-icon">🧺</div>
           <div>
             <h1>Hostel Laundry Management</h1>
-            <p class="subtitle">Direct Fast Entry Mode</p>
+            <p class="subtitle">Shared Real-Time Laundry Tracker</p>
           </div>
+        </div>
+        <div class="header-actions">
+          <button id="reset-btn" class="btn btn-outline btn-small" title="Reset all data for a new day">
+            🔄 Reset Table
+          </button>
         </div>
       </div>
     </header>
@@ -31,14 +36,14 @@
     <!-- Main Content Area -->
     <main class="main-content">
       
-      <!-- Date Banner & Hint -->
+      <!-- Date Banner & Live Indicator -->
       <div class="top-info-bar">
         <div class="date-bar">
           <span class="date-label">📅 Today's Date:</span>
           <span id="current-date" class="date-value"></span>
         </div>
-        <div class="keyboard-hint">
-          💡 <strong>Fast Typing Tip:</strong> Use <kbd>Tab</kbd> or <kbd>Enter</kbd> to jump to next box!
+        <div class="live-sync-badge" id="sync-status">
+          <span class="sync-dot"></span> Live Sync Active
         </div>
       </div>
 
@@ -55,10 +60,11 @@
                 <th class="col-item">TRACK</th>
                 <th class="col-item">TOWEL</th>
                 <th class="col-total">TOTAL</th>
+                <th class="col-save">SAVE</th>
               </tr>
             </thead>
             <tbody id="student-table-body">
-              <!-- Exactly 5 Student Rows -->
+              <!-- Exactly 5 Student Rows with Save Buttons -->
             </tbody>
             <tfoot>
               <tr class="total-row">
@@ -71,12 +77,13 @@
                 <td class="col-total total-val-cell">
                   <span class="total-badge grand-total-badge" id="sum-grand-total">0</span>
                 </td>
+                <td class="col-save"></td>
               </tr>
             </tfoot>
           </table>
         </div>
 
-        <!-- Single Submit All Action Bar -->
+        <!-- Single Submit All Action Bar (For Last Person to Send to WhatsApp) -->
         <div class="table-action-footer">
           <button type="button" id="send-all-btn" class="btn btn-send-all">
             <span class="btn-icon">🚀</span> SEND ALL LAUNDRY
@@ -89,7 +96,7 @@
 
     <!-- Footer -->
     <footer class="app-footer">
-      <p>Hostel Laundry Tracker &bull; Direct Fast Entry</p>
+      <p>Hostel Laundry Tracker &bull; Real-time Multi-Device Sync</p>
     </footer>
   </div>
 

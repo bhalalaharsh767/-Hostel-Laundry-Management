@@ -1,6 +1,6 @@
 /* ==========================================================================
    Hostel Laundry Management System - Style Sheet
-   Ultra-Clean, Mobile-First & Phone-Optimized Layout
+   Real-Time Multi-Device Sync & Row-level Save
    ========================================================================== */
 
 :root {
@@ -40,7 +40,7 @@ body {
 
 /* App Container */
 .app-container {
-  max-width: 900px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 14px;
   display: flex;
@@ -96,6 +96,24 @@ body {
   font-weight: 500;
 }
 
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-outline:hover {
+  background-color: #fee2e2;
+  color: var(--danger);
+  border-color: #fecaca;
+}
+
 /* Top Info Bar */
 .top-info-bar {
   display: flex;
@@ -127,26 +145,31 @@ body {
   color: var(--primary);
 }
 
-.keyboard-hint {
+.live-sync-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.8rem;
-  color: #475569;
-  background: #e2e8f0;
+  font-weight: 600;
+  color: #0369a1;
+  background: #e0f2fe;
   padding: 6px 12px;
   border-radius: 20px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #bae6fd;
 }
 
-kbd {
-  background-color: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  box-shadow: 0 1px 1px rgba(0,0,0,0.1);
-  color: #0f172a;
-  display: inline-block;
-  font-size: 0.75rem;
-  font-weight: 700;
-  line-height: 1;
-  padding: 2px 5px;
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #0284c7;
+  border-radius: 50%;
+  animation: pulse 1.8s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.3; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0.3; transform: scale(0.9); }
 }
 
 /* Toast Container & Toasts */
@@ -267,9 +290,10 @@ kbd {
 }
 
 /* Column Specifications */
-.col-name { width: 22%; text-align: left; padding-left: 12px !important; }
-.col-item { width: 13%; }
-.col-total { width: 13%; background-color: #1e293b; }
+.col-name { width: 20%; text-align: left; padding-left: 12px !important; }
+.col-item { width: 11%; }
+.col-total { width: 11%; background-color: #1e293b; }
+.col-save { width: 14%; }
 
 /* Input Fields inside Table */
 .name-input {
@@ -291,7 +315,7 @@ kbd {
 
 .qty-input {
   width: 100%;
-  max-width: 60px;
+  max-width: 54px;
   height: 42px;
   padding: 4px;
   font-size: 1.1rem;
@@ -312,6 +336,40 @@ kbd {
   transform: scale(1.04);
 }
 
+/* Row Save Button & Status */
+.btn-save-row {
+  background-color: #0284c7;
+  color: #ffffff;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 4px rgba(2, 132, 199, 0.25);
+}
+
+.btn-save-row:hover {
+  background-color: #0369a1;
+  transform: translateY(-1px);
+}
+
+.btn-save-row:active {
+  transform: translateY(0);
+}
+
+.saved-badge {
+  font-size: 0.725rem;
+  font-weight: 700;
+  color: #15803d;
+  background: #dcfce7;
+  padding: 3px 6px;
+  border-radius: 6px;
+  display: block;
+  margin-top: 3px;
+}
+
 /* Hide Spin Buttons */
 .qty-input::-webkit-inner-spin-button,
 .qty-input::-webkit-outer-spin-button {
@@ -325,12 +383,12 @@ kbd {
 /* Total Badge Display */
 .total-badge {
   display: inline-block;
-  min-width: 38px;
-  padding: 5px 10px;
+  min-width: 36px;
+  padding: 5px 8px;
   background-color: #e0f2fe;
   color: #0369a1;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.95rem;
   border-radius: 20px;
   border: 1px solid #bae6fd;
 }
@@ -429,119 +487,78 @@ kbd {
   padding: 12px 0;
 }
 
-/* ==========================================================================
-   PHONE & MOBILE SPECIFIC OPTIMIZATIONS
-   ========================================================================== */
+/* Mobile Specific Optimizations */
 @media (max-width: 768px) {
   .app-container {
-    padding: 8px;
-    padding-bottom: 95px; /* Leave space for sticky bottom button */
+    padding: 6px;
+    padding-bottom: 95px;
   }
 
   .app-header {
-    padding: 12px 14px;
+    padding: 12px 10px;
     margin-bottom: 10px;
   }
 
   .logo-icon {
-    width: 38px;
-    height: 38px;
-    font-size: 22px;
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
   }
 
   .logo-area h1 {
-    font-size: 1.05rem;
-  }
-
-  .subtitle {
-    font-size: 0.75rem;
-  }
-
-  .top-info-bar {
-    margin-bottom: 10px;
-  }
-
-  .date-bar {
-    width: 100%;
-    justify-content: center;
-    padding: 6px 10px;
-    font-size: 0.8rem;
-  }
-
-  .keyboard-hint {
-    display: none; /* Desktop hint hidden on phone */
-  }
-
-  .table-card {
-    border-radius: 10px;
+    font-size: 1rem;
   }
 
   .laundry-table th {
-    padding: 10px 2px;
-    font-size: 0.7rem;
-    letter-spacing: 0;
+    padding: 8px 1px;
+    font-size: 0.65rem;
   }
 
   .laundry-table td {
-    padding: 8px 2px;
+    padding: 6px 1px;
   }
 
   .col-name {
-    width: 24%;
-    padding-left: 6px !important;
+    width: 20%;
+    padding-left: 4px !important;
   }
 
   .name-input {
-    font-size: 0.825rem;
-    padding: 6px 4px;
+    font-size: 0.775rem;
+    padding: 6px 2px;
   }
 
-  /* Large Touch Targets for Phone Keypad */
   .qty-input {
-    max-width: 44px;
-    height: 44px;
-    font-size: 1.15rem;
-    font-weight: 800;
-    border-radius: 8px;
+    max-width: 40px;
+    height: 40px;
+    font-size: 1.05rem;
+  }
+
+  .btn-save-row {
+    padding: 6px 6px;
+    font-size: 0.7rem;
   }
 
   .total-badge {
-    min-width: 32px;
-    padding: 4px 6px;
-    font-size: 0.875rem;
+    min-width: 28px;
+    padding: 3px 4px;
+    font-size: 0.825rem;
   }
 
-  .total-label-cell {
-    font-size: 0.85rem;
-  }
-
-  .total-val-cell {
-    font-size: 0.95rem;
-  }
-
-  .grand-total-badge {
-    font-size: 0.95rem !important;
-    padding: 4px 8px !important;
-  }
-
-  /* STICKY BOTTOM BUTTON FOR PHONES */
   .table-action-footer {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     z-index: 999;
-    padding: 12px 16px;
+    padding: 12px 14px;
     background: #ffffff;
     box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
-    border-top: 1px solid var(--border-light);
   }
 
   .btn-send-all {
     width: 100%;
     padding: 14px 16px;
-    font-size: 1.05rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.4);
+    font-size: 1rem;
   }
 }

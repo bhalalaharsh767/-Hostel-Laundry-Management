@@ -1,6 +1,6 @@
 /**
  * Hostel Laundry Management System
- * Phone-Optimized Direct Entry & Numeric Keypad Support
+ * Shared Real-Time Multi-Device Sync & Per-Row Save
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const toastContainer = document.getElementById('toast-container');
   const sendAllBtn = document.getElementById('send-all-btn');
   const sendAllStatusEl = document.getElementById('send-all-status');
+  const resetBtn = document.getElementById('reset-btn');
+  const syncStatusEl = document.getElementById('sync-status');
 
   // Total Row Elements
   const sumPantEl = document.getElementById('sum-pant');
@@ -21,23 +23,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Exactly 5 students
   const students = ['Ronit', 'Raj', 'Harsh', 'Preet', 'Meet'];
-  const TARGET_URL = 'https://share.google/3umX153OFCJdNUwMw';
+
+  // Track active focus to prevent overwriting field while user is typing
+  let activeInputElement = null;
 
   // Display Current Date
   const today = new Date();
   const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
   currentDateEl.textContent = today.toLocaleDateString('en-US', options);
-
-  // Auto-focus on the first item input field for instant typing
-  function focusFirstInput() {
-    setTimeout(() => {
-      const firstQtyInput = studentTableBody.querySelector('.qty-input');
-      if (firstQtyInput) {
-        firstQtyInput.focus();
-        firstQtyInput.select();
-      }
-    }, 200);
-  }
 
   // Initialize Default Table
   function initTable() {
@@ -47,11 +40,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     calculateGrandTotals();
-    focusFirstInput();
+    fetchSharedData();
+
+    // Start Real-Time Live Sync Polling (Every 3 seconds)
+    setInterval(fetchSharedData, 3000);
   }
 
   /**
-   * Add a student row to the table (with numeric keypad attributes for phones)
+   * Add a student row to the table
    * @param {string} studentName 
    * @param {number} index 
    */
@@ -59,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const rowId = `row-${index}`;
     const tr = document.createElement('tr');
     tr.id = rowId;
+    tr.dataset.studentName = studentName;
     tr.dataset.rowIndex = index;
 
     tr.innerHTML = `
@@ -83,6 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
       <td class="col-total">
         <span class="total-badge" id="total-${rowId}">0</span>
       </td>
+      <td class="col-save">
+        <button type="button" class="btn-save-row" data-student="${studentName}" data-row-id="${rowId}">💾 Save</button>
+        <div class="save-status-box" id="save-status-${rowId}"></div>
+      </td>
     `;
 
     studentTableBody.appendChild(tr);
@@ -95,31 +96,165 @@ document.addEventListener('DOMContentLoaded', () => {
         calculateGrandTotals();
       });
 
-      // Auto-select text on tap/focus for instant overwrite on phone
       input.addEventListener('focus', function() {
+        activeInputElement = this;
         this.select();
+      });
+
+      input.addEventListener('blur', function() {
+        if (activeInputElement === this) {
+          activeInputElement = null;
+        }
       });
 
       input.addEventListener('touchstart', function() {
         setTimeout(() => this.select(), 50);
       });
 
-      // Keyboard Arrow & Enter Navigation
       input.addEventListener('keydown', (e) => {
         handleKeyboardNav(e, index, parseInt(input.dataset.col));
       });
     });
 
-    const nameInput = tr.querySelector('.name-input');
-    nameInput.addEventListener('input', () => {
-      calculateGrandTotals();
+    // Save Row Button Event Listener
+    const saveRowBtn = tr.querySelector('.btn-save-row');
+    saveRowBtn.addEventListener('click', () => {
+      saveStudentRow(studentName, rowId);
     });
 
     calculateRowTotal(rowId);
   }
 
   /**
-   * Smooth Keyboard & Next-Row Navigation
+   * Save an individual student row to the server & local storage
+   */
+  async function saveStudentRow(studentName, rowId) {
+    const row = document.getElementById(rowId);
+    if (!row) return;
+
+    const pant = parseInt(row.querySelector('[data-field="pant"]')?.value) || 0;
+    const shirt = parseInt(row.querySelector('[data-field="shirt"]')?.value) || 0;
+    const tshirt = parseInt(row.querySelector('[data-field="tshirt"]')?.value) || 0;
+    const track = parseInt(row.querySelector('[data-field="track"]')?.value) || 0;
+    const towel = parseInt(row.querySelector('[data-field="towel"]')?.value) || 0;
+    const rowTotal = pant + shirt + tshirt + track + towel;
+
+    const timestamp = new Date();
+    const timeStr = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const payload = {
+      name: studentName,
+      pant,
+      shirt,
+      tshirt,
+      track,
+      towel,
+      savedAt: timeStr
+    };
+
+    // Update Status Badge locally right away
+    const statusBox = document.getElementById(`save-status-${rowId}`);
+    if (statusBox) {
+      statusBox.innerHTML = `<span class="saved-badge">✓ Saved (${rowTotal})</span>`;
+    }
+
+    showToast('Saved Successfully! 💾', `${studentName}'s laundry row saved (${rowTotal} items).`, 'success');
+
+    // Save to server backend
+    try {
+      await fetch('/api/laundry/save-row', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } catch (err) {
+      // Fallback local storage
+      const localData = JSON.parse(localStorage.getItem('shared_laundry_data') || '{}');
+      localData[studentName] = payload;
+      localStorage.setItem('shared_laundry_data', JSON.stringify(localData));
+    }
+  }
+
+  /**
+   * Fetch Shared Laundry Data from Server for Real-Time Multi-Device Sync
+   */
+  async function fetchSharedData() {
+    try {
+      const res = await fetch('/api/laundry');
+      if (!res.ok) throw new Error('API offline');
+      const data = await res.json();
+      applySharedData(data);
+    } catch (err) {
+      // Fallback local storage sync
+      const localData = JSON.parse(localStorage.getItem('shared_laundry_data') || '{}');
+      applySharedData(localData);
+    }
+  }
+
+  /**
+   * Apply shared data to table rows
+   */
+  function applySharedData(data) {
+    if (!data) return;
+
+    students.forEach((name, idx) => {
+      const studentData = data[name];
+      if (!studentData) return;
+
+      const rowId = `row-${idx}`;
+      const row = document.getElementById(rowId);
+      if (!row) return;
+
+      const fields = ['pant', 'shirt', 'tshirt', 'track', 'towel'];
+      fields.forEach(field => {
+        const input = row.querySelector(`[data-field="${field}"]`);
+        if (input && activeInputElement !== input) {
+          const val = studentData[field] || 0;
+          input.value = val > 0 ? val : '';
+        }
+      });
+
+      calculateRowTotal(rowId);
+
+      const statusBox = document.getElementById(`save-status-${rowId}`);
+      if (statusBox && studentData.saved) {
+        const total = (studentData.pant || 0) + (studentData.shirt || 0) + (studentData.tshirt || 0) + (studentData.track || 0) + (studentData.towel || 0);
+        statusBox.innerHTML = `<span class="saved-badge">✓ Saved ${studentData.savedAt ? '(' + studentData.savedAt + ')' : ''}</span>`;
+      }
+    });
+
+    calculateGrandTotals();
+  }
+
+  /**
+   * Reset Table Data
+   */
+  async function resetTable() {
+    if (!confirm('Are you sure you want to reset all laundry data for a new day?')) return;
+
+    try {
+      await fetch('/api/laundry/reset', { method: 'POST' });
+    } catch (e) {
+      localStorage.removeItem('shared_laundry_data');
+    }
+
+    students.forEach((name, idx) => {
+      const rowId = `row-${idx}`;
+      const row = document.getElementById(rowId);
+      if (row) {
+        row.querySelectorAll('.qty-input').forEach(i => i.value = '');
+        calculateRowTotal(rowId);
+        const statusBox = document.getElementById(`save-status-${rowId}`);
+        if (statusBox) statusBox.innerHTML = '';
+      }
+    });
+
+    calculateGrandTotals();
+    showToast('Reset Complete 🔄', 'All student entries have been reset.', 'info');
+  }
+
+  /**
+   * Smooth Keyboard Navigation between inputs using Enter / Arrow keys
    */
   function handleKeyboardNav(e, rowIndex, colIndex) {
     let nextRow = rowIndex;
@@ -157,8 +292,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /**
    * Calculate Total for a single row
-   * @param {string} rowId 
-   * @returns {number}
    */
   function calculateRowTotal(rowId) {
     const row = document.getElementById(rowId);
@@ -225,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Single Submit All Laundry Function - Copies summary and opens Target Link
+   * Single Submit All Laundry Function - Opens WhatsApp with Laundry Total Summary
    */
   function handleSendAll() {
     const grandTotal = calculateGrandTotals();
@@ -237,6 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const timestamp = new Date();
     const timeStr = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const dateStr = timestamp.toLocaleDateString();
 
     const sumPant = sumPantEl.textContent || 0;
     const sumShirt = sumShirtEl.textContent || 0;
@@ -244,22 +378,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const sumTrack = sumTrackEl.textContent || 0;
     const sumTowel = sumTowelEl.textContent || 0;
 
-    // Copy Summary Text to Clipboard for fast pasting inside Google Form / Portal
-    const copyText = `Pants: ${sumPant}, Shirts: ${sumShirt}, T-Shirts: ${sumTshirt}, Tracks: ${sumTrack}, Towels: ${sumTowel}, Total: ${grandTotal}`;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(copyText).catch(() => {});
-    }
+    // Construct WhatsApp message with Laundry Totals
+    const waMsg = 
+`🧺 *HOSTEL LAUNDRY TOTAL*
+📅 *Date & Time:* ${dateStr}, ${timeStr}
+----------------------------------
+👖 *Pants:* ${sumPant}
+👕 *Shirts:* ${sumShirt}
+👕 *T-Shirts:* ${sumTshirt}
+🩳 *Tracks:* ${sumTrack}
+Mer: *Towels:* ${sumTowel}
+----------------------------------
+🔢 *GRAND TOTAL:* ${grandTotal} Clothes`;
 
     // Show Success Toast Message
-    showToast('Sent Successfully! 🚀', `Copied totals! Opening form link...`, 'success');
+    showToast('Sent Successfully! 🚀', `Opening WhatsApp...`, 'success');
 
     // Display Status Message Below Button
     if (sendAllStatusEl) {
-      sendAllStatusEl.innerHTML = `<span class="sent-status-badge">✓ Submitted All Laundry at ${timeStr} (${grandTotal} items)</span>`;
+      sendAllStatusEl.innerHTML = `<span class="sent-status-badge">✓ Submitted & Opening WhatsApp (${grandTotal} items)</span>`;
     }
 
-    // Open target link directly
-    window.open(TARGET_URL, '_blank');
+    // Open WhatsApp directly
+    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(waMsg)}`;
+    window.open(waUrl, '_blank');
   }
 
   /**
@@ -293,9 +435,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 4000);
   }
 
-  // Attach event listener to main SEND ALL button
+  // Event Listeners
   if (sendAllBtn) {
     sendAllBtn.addEventListener('click', handleSendAll);
+  }
+
+  if (resetBtn) {
+    resetBtn.addEventListener('click', resetTable);
   }
 
   // Initialize Table
