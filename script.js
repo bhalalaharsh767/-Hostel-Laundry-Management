@@ -1,6 +1,6 @@
 /**
  * Hostel Laundry Management System
- * Core Application Logic - Direct Fast Entry Mode
+ * Phone-Optimized Direct Entry & Numeric Keypad Support
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         firstQtyInput.focus();
         firstQtyInput.select();
       }
-    }, 150);
+    }, 200);
   }
 
   // Initialize Default Table
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Add a student row to the table
+   * Add a student row to the table (with numeric keypad attributes for phones)
    * @param {string} studentName 
    * @param {number} index 
    */
@@ -63,22 +63,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     tr.innerHTML = `
       <td class="col-name">
-        <input type="text" class="name-input" value="${studentName}" placeholder="Enter Name" data-field="name">
+        <input type="text" class="name-input" value="${studentName}" placeholder="Name" data-field="name">
       </td>
       <td class="col-item">
-        <input type="number" min="0" class="qty-input" value="" placeholder="0" data-field="pant" data-col="0">
+        <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" class="qty-input" value="" placeholder="0" data-field="pant" data-col="0">
       </td>
       <td class="col-item">
-        <input type="number" min="0" class="qty-input" value="" placeholder="0" data-field="shirt" data-col="1">
+        <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" class="qty-input" value="" placeholder="0" data-field="shirt" data-col="1">
       </td>
       <td class="col-item">
-        <input type="number" min="0" class="qty-input" value="" placeholder="0" data-field="tshirt" data-col="2">
+        <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" class="qty-input" value="" placeholder="0" data-field="tshirt" data-col="2">
       </td>
       <td class="col-item">
-        <input type="number" min="0" class="qty-input" value="" placeholder="0" data-field="track" data-col="3">
+        <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" class="qty-input" value="" placeholder="0" data-field="track" data-col="3">
       </td>
       <td class="col-item">
-        <input type="number" min="0" class="qty-input" value="" placeholder="0" data-field="towel" data-col="4">
+        <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" class="qty-input" value="" placeholder="0" data-field="towel" data-col="4">
       </td>
       <td class="col-total">
         <span class="total-badge" id="total-${rowId}">0</span>
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     studentTableBody.appendChild(tr);
 
-    // Input Events & Keyboard Navigation
+    // Input Events & Phone Touch Selection
     const qtyInputs = tr.querySelectorAll('.qty-input');
     qtyInputs.forEach(input => {
       input.addEventListener('input', () => {
@@ -95,8 +95,13 @@ document.addEventListener('DOMContentLoaded', () => {
         calculateGrandTotals();
       });
 
+      // Auto-select text on tap/focus for instant overwrite on phone
       input.addEventListener('focus', function() {
         this.select();
+      });
+
+      input.addEventListener('touchstart', function() {
+        setTimeout(() => this.select(), 50);
       });
 
       // Keyboard Arrow & Enter Navigation
@@ -114,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Smooth Keyboard Navigation between inputs using Enter / Arrow keys
+   * Smooth Keyboard & Next-Row Navigation
    */
   function handleKeyboardNav(e, rowIndex, colIndex) {
     let nextRow = rowIndex;
@@ -281,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       if (toast.parentNode) {
         toast.style.opacity = '0';
-        toast.style.transform = 'translateX(50px)';
+        toast.style.transform = 'translateY(-20px)';
         toast.style.transition = 'all 0.3s ease';
         setTimeout(() => toast.remove(), 300);
       }
