@@ -11,6 +11,24 @@
 </head>
 <body>
 
+  <!-- Optional Login Modal -->
+  <div id="login-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="logo-icon">🧺</div>
+        <h2>Hostel Laundry Login</h2>
+        <p class="modal-sub">Enter Passcode to Access Laundry Entry</p>
+      </div>
+      <form id="login-form">
+        <div class="input-group">
+          <input type="password" id="passcode-input" placeholder="Enter Passcode (Default: 1234)" autofocus required>
+        </div>
+        <button type="submit" class="btn btn-login">Login & Type Entry</button>
+      </form>
+      <p class="login-tip">Tip: Press Enter to quickly log in and start typing numbers.</p>
+    </div>
+  </div>
+
   <div class="app-container">
     <!-- Header Section -->
     <header class="app-header">
@@ -19,8 +37,13 @@
           <div class="logo-icon">🧺</div>
           <div>
             <h1>Hostel Laundry Management</h1>
-            <p class="subtitle">Daily Student Laundry Tracker</p>
+            <p class="subtitle">Direct Fast Entry Mode</p>
           </div>
+        </div>
+        <div class="header-actions">
+          <button id="quick-lock-btn" class="btn btn-outline btn-small" title="Lock Access">
+            🔒 Lock Access
+          </button>
         </div>
       </div>
     </header>
@@ -31,10 +54,15 @@
     <!-- Main Content Area -->
     <main class="main-content">
       
-      <!-- Date Banner -->
-      <div class="date-bar">
-        <span class="date-label">📅 Today's Date:</span>
-        <span id="current-date" class="date-value"></span>
+      <!-- Date Banner & Hint -->
+      <div class="top-info-bar">
+        <div class="date-bar">
+          <span class="date-label">📅 Today's Date:</span>
+          <span id="current-date" class="date-value"></span>
+        </div>
+        <div class="keyboard-hint">
+          💡 <strong>Fast Typing Tip:</strong> Use <kbd>Tab</kbd> or <kbd>Enter</kbd> to jump to next box!
+        </div>
       </div>
 
       <!-- Laundry Entry Table Card -->
@@ -84,7 +112,7 @@
 
     <!-- Footer -->
     <footer class="app-footer">
-      <p>Hostel Laundry Tracker &bull; Simple & Fast Student Entry</p>
+      <p>Hostel Laundry Tracker &bull; Direct Fast Entry</p>
     </footer>
   </div>
 
