@@ -1,0 +1,47 @@
+{
+  "Ronit": {
+    "pant": 0,
+    "shirt": 0,
+    "tshirt": 0,
+    "track": 0,
+    "towel": 0,
+    "saved": false,
+    "savedAt": ""
+  },
+  "Raj": {
+    "pant": 0,
+    "shirt": 0,
+    "tshirt": 0,
+    "track": 0,
+    "towel": 0,
+    "saved": false,
+    "savedAt": ""
+  },
+  "Harsh": {
+    "pant": 0,
+    "shirt": 0,
+    "tshirt": 0,
+    "track": 0,
+    "towel": 0,
+    "saved": false,
+    "savedAt": ""
+  },
+  "Preet": {
+    "pant": 0,
+    "shirt": 0,
+    "tshirt": 0,
+    "track": 0,
+    "towel": 0,
+    "saved": false,
+    "savedAt": ""
+  },
+  "Meet": {
+    "pant": 0,
+    "shirt": 0,
+    "tshirt": 0,
+    "track": 0,
+    "towel": 0,
+    "saved": false,
+    "savedAt": ""
+  }
+}

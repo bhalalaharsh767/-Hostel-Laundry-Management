@@ -2,29 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Hostel Laundry Management</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+  <!-- Background Decorative Ambient Orbs -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+  <div class="bg-glow bg-glow-3"></div>
 
   <div class="app-container">
     <!-- Header Section -->
     <header class="app-header">
       <div class="header-content">
         <div class="logo-area">
-          <div class="logo-icon">🧺</div>
+          <div class="logo-icon-glow">
+            <span class="logo-emoji">🧺</span>
+          </div>
           <div>
-            <h1>Hostel Laundry Management</h1>
-            <p class="subtitle">Shared Real-Time Laundry Tracker</p>
+            <h1>Hostel Laundry</h1>
+            <p class="subtitle">Live Shared Multi-Device Tracker</p>
           </div>
         </div>
         <div class="header-actions">
-          <button id="reset-btn" class="btn btn-outline btn-small" title="Reset all data for a new day">
-            🔄 Reset Table
+          <button id="reset-btn" class="btn btn-glass-danger btn-small" title="Reset all data for a new day">
+            <span class="btn-icon">🔄</span> Reset
           </button>
         </div>
       </div>
@@ -38,33 +45,33 @@
       
       <!-- Date Banner & Live Indicator -->
       <div class="top-info-bar">
-        <div class="date-bar">
-          <span class="date-label">📅 Today's Date:</span>
+        <div class="date-chip">
+          <span class="date-icon">📅</span>
           <span id="current-date" class="date-value"></span>
         </div>
-        <div class="live-sync-badge" id="sync-status">
-          <span class="sync-dot"></span> Live Sync Active
+        <div class="live-sync-chip" id="sync-status">
+          <span class="sync-ping"></span> Live Sync Active
         </div>
       </div>
 
-      <!-- Laundry Entry Table Card -->
-      <div class="card table-card">
+      <!-- Main Laundry Entry Card -->
+      <div class="card glass-card table-card">
         <div class="table-responsive">
           <table class="laundry-table" id="laundry-table">
             <thead>
               <tr>
-                <th class="col-name">NAME</th>
-                <th class="col-item">PANT</th>
-                <th class="col-item">SHIRT</th>
-                <th class="col-item">T-SHIRT</th>
-                <th class="col-item">TRACK</th>
-                <th class="col-item">TOWEL</th>
-                <th class="col-total">TOTAL</th>
-                <th class="col-save">SAVE</th>
+                <th class="col-name">👤 NAME</th>
+                <th class="col-item">👖 PANT</th>
+                <th class="col-item">👕 SHIRT</th>
+                <th class="col-item">👕 T-SHIRT</th>
+                <th class="col-item">🩳 TRACK</th>
+                <th class="col-item">🧣 TOWEL</th>
+                <th class="col-total">🔢 TOTAL</th>
+                <th class="col-save">💾 SAVE</th>
               </tr>
             </thead>
             <tbody id="student-table-body">
-              <!-- Exactly 5 Student Rows with Save Buttons -->
+              <!-- Exactly 5 Student Rows with Touch Steppers & Save Buttons -->
             </tbody>
             <tfoot>
               <tr class="total-row">
@@ -83,9 +90,9 @@
           </table>
         </div>
 
-        <!-- Single Submit All Action Bar (For Last Person to Send to WhatsApp) -->
+        <!-- Sticky Floating Bottom Submit Bar -->
         <div class="table-action-footer">
-          <button type="button" id="send-all-btn" class="btn btn-send-all">
+          <button type="button" id="send-all-btn" class="btn btn-gradient-send">
             <span class="btn-icon">🚀</span> SEND ALL LAUNDRY
           </button>
           <div id="send-all-status" class="send-all-status"></div>

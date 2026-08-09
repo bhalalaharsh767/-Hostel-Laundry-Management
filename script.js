@@ -1,6 +1,7 @@
 /**
  * Hostel Laundry Management System
- * Shared Real-Time Multi-Device Sync & Per-Row Save
+ * Premium Dark Glassmorphism Design System
+ * Touch Steppers, Real-time Multi-Device Sync & Per-Row Save
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -11,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const sendAllBtn = document.getElementById('send-all-btn');
   const sendAllStatusEl = document.getElementById('send-all-status');
   const resetBtn = document.getElementById('reset-btn');
-  const syncStatusEl = document.getElementById('sync-status');
 
   // Total Row Elements
   const sumPantEl = document.getElementById('sum-pant');
@@ -24,16 +24,28 @@ document.addEventListener('DOMContentLoaded', () => {
   // Exactly 5 students
   const students = ['Ronit', 'Raj', 'Harsh', 'Preet', 'Meet'];
 
-  // Track active focus to prevent overwriting field while user is typing
+  // Track active focus and dirty rows (rows with unsaved user edits)
   let activeInputElement = null;
+  const dirtyRows = new Set();
 
   // Display Current Date
   const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
   const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
   currentDateEl.textContent = today.toLocaleDateString('en-US', options);
 
+  // Auto Reset Local Fallback if Date Changed
+  function checkLocalDateReset() {
+    const savedDate = localStorage.getItem('shared_laundry_date');
+    if (savedDate !== todayStr) {
+      localStorage.removeItem('shared_laundry_data');
+      localStorage.setItem('shared_laundry_date', todayStr);
+    }
+  }
+
   // Initialize Default Table
   function initTable() {
+    checkLocalDateReset();
     studentTableBody.innerHTML = '';
     students.forEach((name, index) => {
       addStudentRow(name, index);
@@ -42,12 +54,12 @@ document.addEventListener('DOMContentLoaded', () => {
     calculateGrandTotals();
     fetchSharedData();
 
-    // Start Real-Time Live Sync Polling (Every 3 seconds)
-    setInterval(fetchSharedData, 3000);
+    // Start Real-Time Live Sync Polling (Every 4 seconds)
+    setInterval(fetchSharedData, 4000);
   }
 
   /**
-   * Add a student row to the table
+   * Add a student row to the table with Touch Steppers (- / +)
    * @param {string} studentName 
    * @param {number} index 
    */
@@ -58,25 +70,21 @@ document.addEventListener('DOMContentLoaded', () => {
     tr.dataset.studentName = studentName;
     tr.dataset.rowIndex = index;
 
+    const initialLetter = studentName.charAt(0).toUpperCase();
+
     tr.innerHTML = `
       <td class="col-name">
-        <input type="text" class="name-input" value="${studentName}" placeholder="Name" data-field="name">
+        <div class="name-badge-cell">
+          <div class="student-avatar">${initialLetter}</div>
+          <span class="student-name-text">${studentName}</span>
+          <input type="hidden" class="name-input" value="${studentName}" data-field="name">
+        </div>
       </td>
-      <td class="col-item">
-        <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" class="qty-input" value="" placeholder="0" data-field="pant" data-col="0">
-      </td>
-      <td class="col-item">
-        <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" class="qty-input" value="" placeholder="0" data-field="shirt" data-col="1">
-      </td>
-      <td class="col-item">
-        <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" class="qty-input" value="" placeholder="0" data-field="tshirt" data-col="2">
-      </td>
-      <td class="col-item">
-        <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" class="qty-input" value="" placeholder="0" data-field="track" data-col="3">
-      </td>
-      <td class="col-item">
-        <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" class="qty-input" value="" placeholder="0" data-field="towel" data-col="4">
-      </td>
+      <td class="col-item">${createStepperHtml('pant', 0)}</td>
+      <td class="col-item">${createStepperHtml('shirt', 1)}</td>
+      <td class="col-item">${createStepperHtml('tshirt', 2)}</td>
+      <td class="col-item">${createStepperHtml('track', 3)}</td>
+      <td class="col-item">${createStepperHtml('towel', 4)}</td>
       <td class="col-total">
         <span class="total-badge" id="total-${rowId}">0</span>
       </td>
@@ -88,16 +96,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     studentTableBody.appendChild(tr);
 
-    // Input Events & Phone Touch Selection
+    // Input Events & Phone Touch Steppers
     const qtyInputs = tr.querySelectorAll('.qty-input');
     qtyInputs.forEach(input => {
       input.addEventListener('input', () => {
+        dirtyRows.add(rowId);
         calculateRowTotal(rowId);
         calculateGrandTotals();
       });
 
       input.addEventListener('focus', function() {
         activeInputElement = this;
+        dirtyRows.add(rowId);
         this.select();
       });
 
@@ -108,11 +118,36 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       input.addEventListener('touchstart', function() {
+        activeInputElement = this;
+        dirtyRows.add(rowId);
         setTimeout(() => this.select(), 50);
       });
 
       input.addEventListener('keydown', (e) => {
         handleKeyboardNav(e, index, parseInt(input.dataset.col));
+      });
+    });
+
+    // Attach Stepper Buttons (- and +) Click Listeners
+    tr.querySelectorAll('.btn-step').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const action = btn.dataset.action;
+        const targetField = btn.dataset.targetField;
+        const targetInput = tr.querySelector(`[data-field="${targetField}"]`);
+
+        if (targetInput) {
+          let currentVal = parseInt(targetInput.value) || 0;
+          if (action === 'plus') {
+            currentVal += 1;
+          } else if (action === 'minus') {
+            currentVal = Math.max(0, currentVal - 1);
+          }
+          targetInput.value = currentVal > 0 ? currentVal : '';
+          dirtyRows.add(rowId);
+          calculateRowTotal(rowId);
+          calculateGrandTotals();
+        }
       });
     });
 
@@ -123,6 +158,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     calculateRowTotal(rowId);
+  }
+
+  /**
+   * Create HTML for Stepper (- Input +)
+   */
+  function createStepperHtml(field, colIdx) {
+    return `
+      <div class="stepper-container">
+        <button type="button" class="btn-step step-minus" data-action="minus" data-target-field="${field}">-</button>
+        <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" class="qty-input" value="" placeholder="0" data-field="${field}" data-col="${colIdx}">
+        <button type="button" class="btn-step step-plus" data-action="plus" data-target-field="${field}">+</button>
+      </div>
+    `;
   }
 
   /**
@@ -152,7 +200,8 @@ document.addEventListener('DOMContentLoaded', () => {
       savedAt: timeStr
     };
 
-    // Update Status Badge locally right away
+    dirtyRows.delete(rowId);
+
     const statusBox = document.getElementById(`save-status-${rowId}`);
     if (statusBox) {
       statusBox.innerHTML = `<span class="saved-badge">✓ Saved (${rowTotal})</span>`;
@@ -168,10 +217,10 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify(payload)
       });
     } catch (err) {
-      // Fallback local storage
       const localData = JSON.parse(localStorage.getItem('shared_laundry_data') || '{}');
       localData[studentName] = payload;
       localStorage.setItem('shared_laundry_data', JSON.stringify(localData));
+      localStorage.setItem('shared_laundry_date', todayStr);
     }
   }
 
@@ -185,25 +234,36 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
       applySharedData(data);
     } catch (err) {
-      // Fallback local storage sync
       const localData = JSON.parse(localStorage.getItem('shared_laundry_data') || '{}');
-      applySharedData(localData);
+      applySharedData({ students: localData });
     }
   }
 
   /**
-   * Apply shared data to table rows
+   * Apply shared data to table rows safely without disrupting typing
    */
   function applySharedData(data) {
     if (!data) return;
 
-    students.forEach((name, idx) => {
-      const studentData = data[name];
-      if (!studentData) return;
+    const studentMap = data.students || data;
 
+    students.forEach((name, idx) => {
+      const studentData = studentMap[name];
       const rowId = `row-${idx}`;
       const row = document.getElementById(rowId);
       if (!row) return;
+
+      if (!studentData) {
+        if (!dirtyRows.has(rowId)) {
+          row.querySelectorAll('.qty-input').forEach(i => i.value = '');
+          calculateRowTotal(rowId);
+          const statusBox = document.getElementById(`save-status-${rowId}`);
+          if (statusBox) statusBox.innerHTML = '';
+        }
+        return;
+      }
+
+      if (dirtyRows.has(rowId)) return;
 
       const fields = ['pant', 'shirt', 'tshirt', 'track', 'towel'];
       fields.forEach(field => {
@@ -217,9 +277,12 @@ document.addEventListener('DOMContentLoaded', () => {
       calculateRowTotal(rowId);
 
       const statusBox = document.getElementById(`save-status-${rowId}`);
-      if (statusBox && studentData.saved) {
-        const total = (studentData.pant || 0) + (studentData.shirt || 0) + (studentData.tshirt || 0) + (studentData.track || 0) + (studentData.towel || 0);
-        statusBox.innerHTML = `<span class="saved-badge">✓ Saved ${studentData.savedAt ? '(' + studentData.savedAt + ')' : ''}</span>`;
+      if (statusBox) {
+        if (studentData.saved) {
+          statusBox.innerHTML = `<span class="saved-badge">✓ Saved ${studentData.savedAt ? '(' + studentData.savedAt + ')' : ''}</span>`;
+        } else {
+          statusBox.innerHTML = '';
+        }
       }
     });
 
@@ -231,6 +294,8 @@ document.addEventListener('DOMContentLoaded', () => {
    */
   async function resetTable() {
     if (!confirm('Are you sure you want to reset all laundry data for a new day?')) return;
+
+    dirtyRows.clear();
 
     try {
       await fetch('/api/laundry/reset', { method: 'POST' });
@@ -387,7 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
 👕 *Shirts:* ${sumShirt}
 👕 *T-Shirts:* ${sumTshirt}
 🩳 *Tracks:* ${sumTrack}
-Mer: *Towels:* ${sumTowel}
+🧣 *Towels:* ${sumTowel}
 ----------------------------------
 🔢 *GRAND TOTAL:* ${grandTotal} Clothes`;
 
